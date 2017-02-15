@@ -1,0 +1,37 @@
+---
+- name: Configure graylog instance
+  tags: configure
+  hosts: metrics
+  remote_user: ubuntu
+  become: yes
+
+  tasks:
+  - name: Set hostname
+    hostname:
+      name: phonegap-metrics
+    notify:
+      - restart rsyslog
+  - name: Ensure hostfile is correct
+    lineinfile:
+      dest: /etc/hosts
+      owner: root
+      group: root
+      mode: 0644
+      line: "127.0.0.1 phonegap-metrics"
+      state: present
+      create: yes
+    notify:
+      - restart rsyslog
+
+  handlers:
+    - name: reconfigure graylog
+      command: graylog-ctl reconfigure
+
+    - name: restart rsyslog
+      service: name=rsyslog state=restarted
+
+    - name: restart elasticsearch
+      command: graylog-ctl restart elasticsearch
+
+    - name: restart nginx
+      command: graylog-ctl restart nginx
