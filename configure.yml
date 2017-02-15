@@ -2,6 +2,8 @@
 - name: Configure graylog instance
   tags: configure
   hosts: metrics
+  vars:
+    metrics_disk: /dev/xvdb # the disk device where we will store metrics
   remote_user: ubuntu
   become: yes
 
@@ -22,6 +24,17 @@
       create: yes
     notify:
       - restart rsyslog
+  - name: Ensure EBS volume has a filesystem
+    filesystem:
+      fstype: ext4
+      dev: "{{ metrics_disk }}"
+      force: no
+  - name: Mount EBS volume
+    mount:
+      name: /var/opt/graylog/data
+      src: "{{ metrics_disk }}"
+      fstype: ext4
+      state: mounted
 
   handlers:
     - name: reconfigure graylog
