@@ -1,6 +1,6 @@
-# PhoneGap Infrastructure Management
+# Graylog Server on EC2
 
-> Provision and configure servers supporting PhoneGap in an automated fashion
+> Provision and configure a graylog metrics server in an automated fashion
 
 ## Why?
 
@@ -31,8 +31,8 @@ infrastructure.
 ### Repository Structure
 
 This repository currently contains everything necessary to control a single
-server: the PhoneGap metrics server. The [Ansible Playbooks]() defining this
-server are:
+server: the PhoneGap metrics server. The [Ansible Playbooks](http://docs.ansible.com/ansible/playbooks.html)
+defining this server are:
 
  - **TODO** `provision.yml`: provisions a new server in Amazon EC2 for running
    the metrics server.
@@ -43,7 +43,7 @@ server are:
 ## Requirements
 
  - [Ansible](http://docs.ansible.com/ansible/intro_installation.html) tool installed
- - Private keys for accessing specific AWS instances - talk to Fil
+ - Private keys for accessing specific AWS instances
  - Highly recommended to read through the [Ansible Introduction](http://docs.ansible.com/ansible/intro.html),
    but Ansible's concept of [Playbooks](http://docs.ansible.com/ansible/playbooks.html)
    (a collection of tasks defining the desired final state of a machine), is
