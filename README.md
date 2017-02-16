@@ -57,8 +57,9 @@ in this repository. To ensure the metrics server is configured properly, run:
 
     $ ansible-playbook configure.yml -i hosts --private-key path/to/metrics-server.pem
 
-Check out the [`vars` inside `configure.yml`]() to see what variables you can
-override at the command line; you can do so with the `--extra-vars` flag, e.g.:
+Check out the [`vars` inside `configure.yml`](https://github.com/filmaj/ansible-graylog-ec2/blob/master/configure.yml#L5)
+to see what variables you can override at the command line; you can do so with
+the `--extra-vars` flag, e.g.:
 
     $ ansible-playbook configure.yml -i hosts --private-key ~/.ssh/metrics-server.pem --extra-vars "metrics_disk=/dev/xvdf"
 
