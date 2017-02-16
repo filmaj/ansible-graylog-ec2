@@ -3,7 +3,8 @@
   tags: configure
   hosts: metrics
   vars:
-    metrics_disk: /dev/xvdb # the disk device where we will store metrics
+    metrics_disk: /dev/xvdb    # the disk device where we will store metrics
+    graylog_admin_password: "" # when set via the command line, configures the graylog administrator password
   remote_user: ubuntu
   become: yes
 
@@ -35,7 +36,28 @@
       src: "{{ metrics_disk }}"
       fstype: ext4
       state: mounted
-
+  - name: Ensure NTP service is running
+    service:
+      name: ntp
+      state: started
+  - name: Baseline graylog configuration
+    shell: |
+      graylog-ctl set-timezone UTC \
+      && graylog-ctl set-external-ip "https://{{ inventory_hostname }}:443/api/" \
+      && graylog-ctl enforce-ssl
+    notify:
+      - reconfigure graylog
+  - name: Set graylog admin password
+    shell: graylog-ctl set-admin-password "{{ graylog_admin_password }}" \
+    notify:
+      - reconfigure graylog
+    when: not(
+            (graylog_admin_password is undefined)
+            or
+            (graylog_admin_password is none)
+            or
+            (graylog_admin_password | trim == '')
+          )
   handlers:
     - name: reconfigure graylog
       command: graylog-ctl reconfigure

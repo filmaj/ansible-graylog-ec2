@@ -60,7 +60,7 @@ in this repository. To ensure the metrics server is configured properly, run:
 Check out the [`vars` inside `configure.yml`]() to see what variables you can
 override at the command line; you can do so with the `--extra-vars` flag, e.g.:
 
-    $ ansible-playbook configure.yml -i hosts --private-key ~/.ssh/metrics-server.pem --extra-vars '{"metrics_disk":"/dev/xvdf"}'
+    $ ansible-playbook configure.yml -i hosts --private-key ~/.ssh/metrics-server.pem --extra-vars "metrics_disk=/dev/xvdf"
 
 ## References
 
