@@ -3,12 +3,16 @@
   tags: configure
   hosts: metrics
   vars:
-    metrics_disk: /dev/xvdb    # the disk device where we will store metrics
-    graylog_admin_password: "" # when set via the command line, configures the graylog administrator password
+    metrics_disk: /dev/xvdb                          # the disk device where we will store metrics
+    set_graylog_admin_password: ""                   # when set via the command line, configures the graylog administrator password
+    graylog_pass: "{{ set_graylog_admin_password }}" # defaults to the admin password we want to set, if set.
   remote_user: ubuntu
   become: yes
 
   tasks:
+  - name: Ensure password for Graylog was provided
+    fail: msg="Please provide an admin password for Graylog, either via the graylog_pass variable, or if you would like to set a new password to the Graylog instance, via the set_admin_graylog_password variable."
+    when: graylog_pass | trim == ''
   - name: Set hostname
     hostname:
       name: phonegap-metrics
@@ -45,19 +49,24 @@
       graylog-ctl set-timezone UTC \
       && graylog-ctl set-external-ip "https://{{ inventory_hostname }}:443/api/" \
       && graylog-ctl enforce-ssl
+    args:
+      creates: /etc/graylog/graylog-settings.json
     notify:
       - reconfigure graylog
   - name: Set graylog admin password
-    shell: graylog-ctl set-admin-password "{{ graylog_admin_password }}" \
+    shell: graylog-ctl set-admin-password "{{ set_graylog_admin_password }}" \
     notify:
       - reconfigure graylog
-    when: not(
-            (graylog_admin_password is undefined)
-            or
-            (graylog_admin_password is none)
-            or
-            (graylog_admin_password | trim == '')
-          )
+    when: not(set_graylog_admin_password | trim == '')
+  - name: Ensure pip is installed
+    apt:
+      name: python-pip
+      state: present
+  - name: Ensure httplib2 is installed
+    pip:
+      name: httplib2
+      state: latest
+
   handlers:
     - name: reconfigure graylog
       command: graylog-ctl reconfigure

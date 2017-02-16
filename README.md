@@ -53,10 +53,28 @@ defining this server are:
 
 There is currently one playbook in this repository: the `configure.yml`
 playbook. The active metrics server instance is described in the `hosts` file
-in this repository. To ensure the metrics server is configured properly, run:
+in this repository.
 
-    $ ansible-playbook configure.yml -i hosts --private-key path/to/metrics-server.pem
+### First Run
 
+When running this for the first time, you should most definitely set a new
+password for the Graylog instance. Do so by passing the `set_graylog_admin_password`
+variable like so:
+
+    $ ansible-playbook configure.yml -i hosts --private-key path/to/metrics-server.pem --extra-vars "set_graylog_admin_password=mysecretpassword"
+
+You can also run this if you would like to reset the Graylog admin password.
+
+### Subsequent Runs
+
+To ensure the metrics server is configured properly, run:
+
+    $ ansible-playbook configure.yml -i hosts --private-key path/to/metrics-server.pem --extra-vars "graylog_pass=mysecretpassword"
+
+### Configuration Parameters
+
+You can customize aspects of the `configure.yml` playbook by the use of
+[Ansible variables](http://docs.ansible.com/ansible/playbooks_variables.html).
 Check out the [`vars` inside `configure.yml`](https://github.com/filmaj/ansible-graylog-ec2/blob/master/configure.yml#L5)
 to see what variables you can override at the command line; you can do so with
 the `--extra-vars` flag, e.g.:
