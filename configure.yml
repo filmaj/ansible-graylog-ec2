@@ -59,6 +59,8 @@
       - reconfigure graylog
     when: not(set_graylog_admin_password | trim == '')
   - name: Ensure pip is installed
+    # TODO: this installs a bad version of pip!
+    # use https://odedrabhavesh.blogspot.mx/2017/02/importerror-no-module-named.html
     apt:
       name: python-pip
       state: present
