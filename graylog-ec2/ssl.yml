@@ -1,0 +1,46 @@
+---
+# This platbook leverages Let's Encrypt to create an SSL certificate for the
+# domain of our Graylog instance. It's important to customize the variables
+# below for your own usage!
+# Note that this will bounce nginx, as interacting with Let's Encrypt requires a delicate dance with nginx.
+- hosts: metrics
+  become: yes
+  remote_user: ubuntu
+  become_user: root
+  vars:
+    domain: metrics.phonegap.com           # the domain we want to create an SSL certificate for
+    email: filmaj@adobe.com                # the email to associate the domain to
+    ssl_path: /opt/graylog/conf/nginx/ca   # the location to put the SSL certificates to - defaults to the standard Graylog location
+    key_path: "{{ ssl_path }}/graylog.key" # the name of the private key file, as required by Graylog
+    cert_path: "{{ ssl_path}}/graylog.crt" # the name of the certificate file, as required by Graylog
+  pre_tasks:
+    - name: Check if graylog is installed (in case this is first-run)
+      command: which graylog-ctl
+      register: has_graylog
+      ignore_errors: yes
+    - name: Stop nginx
+      command: graylog-ctl stop nginx
+      when: has_graylog.rc == 0
+  roles:
+  - role: ansible-letsencrypt
+    letsencrypt_email: "{{ email }}"
+    letsencrypt_domain: "{{ domain }}"
+    letsencrypt_request_www: false
+  post_tasks:
+    - name: Create directory for SSL certs
+      file:
+        path: "{{ ssl_path }}"
+        state: directory
+    - name: Copy SSL private key file to graylog destination
+      shell: cp /etc/letsencrypt/live/{{ domain }}/privkey.pem {{ key_path }}
+    - name: Copy SSL certificate file to graylog destination
+      shell: cp /etc/letsencrypt/live/{{ domain }}/fullchain.pem {{ cert_path }}
+    - name: Ensure key is only readable by root
+      file:
+        path: "{{ key_path }}"
+        owner: root
+        group: root
+        mode: 0400
+    - name: Start nginx
+      command: graylog-ctl start nginx
+      when: has_graylog.rc == 0

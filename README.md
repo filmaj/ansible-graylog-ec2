@@ -1,6 +1,6 @@
-# Graylog Server on EC2
+# PhoneGap Infrastructure
 
-> Provision and configure a graylog metrics server in an automated fashion
+> Provision and configure different kinds of infrastructure in an automated fashion
 
 ## Why?
 
@@ -13,6 +13,15 @@ gives us an automated way to reproduce the server's software, libraries and
 configuration. Combining these two together gives us a fast and powerful way of
 managing our servers, and gives us the ability to _reproduce_ and _trace_ our
 infrastructure.
+
+## Requirements
+
+ - [Ansible](http://docs.ansible.com/ansible/intro_installation.html) tool installed
+ - Private keys for accessing specific AWS instances
+ - Highly recommended to read through the [Ansible Introduction](http://docs.ansible.com/ansible/intro.html),
+   but Ansible's concept of [Playbooks](http://docs.ansible.com/ansible/playbooks.html)
+   (a collection of tasks defining the desired final state of a machine), is
+   worth a read.
 
 ## Overview
 
@@ -30,59 +39,9 @@ infrastructure.
 
 ### Repository Structure
 
-This repository currently contains everything necessary to control a single
-server: the PhoneGap metrics server. The [Ansible Playbooks](http://docs.ansible.com/ansible/playbooks.html)
-defining this server are:
+The subdirectories in this repository contain sets of
+[Ansible Playbooks](http://docs.ansible.com/ansible/playbooks.html) and
+documentation to manage specific kinds of infrastructure. So far:
 
- - **TODO** `provision.yml`: provisions a new server in Amazon EC2 for running
-   the metrics server.
- - `configure.yml`: once a server is provisioned, this playbook configures the
-   server with the appropriate libraries, dependencies, software and
-   configuration necessary for the metrics server to run.
-
-## Requirements
-
- - [Ansible](http://docs.ansible.com/ansible/intro_installation.html) tool installed
- - Private keys for accessing specific AWS instances
- - Highly recommended to read through the [Ansible Introduction](http://docs.ansible.com/ansible/intro.html),
-   but Ansible's concept of [Playbooks](http://docs.ansible.com/ansible/playbooks.html)
-   (a collection of tasks defining the desired final state of a machine), is
-   worth a read.
-
-## Getting Started
-
-There is currently one playbook in this repository: the `configure.yml`
-playbook. The active metrics server instance is described in the `hosts` file
-in this repository.
-
-### First Run
-
-When running this for the first time, you should most definitely set a new
-password for the Graylog instance. Do so by passing the `set_graylog_admin_password`
-variable like so:
-
-    $ ansible-playbook configure.yml -i hosts --private-key path/to/metrics-server.pem --extra-vars "set_graylog_admin_password=mysecretpassword"
-
-You can also run this if you would like to reset the Graylog admin password.
-
-### Subsequent Runs
-
-To ensure the metrics server is configured properly, run:
-
-    $ ansible-playbook configure.yml -i hosts --private-key path/to/metrics-server.pem --extra-vars "graylog_pass=mysecretpassword"
-
-### Configuration Parameters
-
-You can customize aspects of the `configure.yml` playbook by the use of
-[Ansible variables](http://docs.ansible.com/ansible/playbooks_variables.html).
-Check out the [`vars` inside `configure.yml`](https://github.com/filmaj/ansible-graylog-ec2/blob/master/configure.yml#L5)
-to see what variables you can override at the command line; you can do so with
-the `--extra-vars` flag, e.g.:
-
-    $ ansible-playbook configure.yml -i hosts --private-key ~/.ssh/metrics-server.pem --extra-vars "metrics_disk=/dev/xvdf"
-
-## References
-
-Shamlessly cobbled together from the following sources:
-
-- http://www.touchstonesoftworks.com/blog/aws_graylog_ansible_provision
+ - `graylog-ec2`: A [Graylog](http://www.graylog.org)-powered data storage and
+   analytics server running on EC2, powering https://metrics.phonegap.com.

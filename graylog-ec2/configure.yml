@@ -1,11 +1,16 @@
 ---
-- name: Configure graylog instance
+# Sets up the basics for the Graylog instance.
+# Take a look at the individual tasks below to see what specific steps are executed on the instance.
+# The `vars` block a few lines down lists out all variables you can pass to this playbook.
+# You can provide them at runtime using the `--extra-vars "key=value"` flag.
+- name: Configure Graylog instance
   tags: configure
   hosts: metrics
   vars:
     metrics_disk: /dev/xvdb                          # the disk device where we will store metrics
-    set_graylog_admin_password: ""                   # when set via the command line, configures the graylog administrator password
-    graylog_pass: "{{ set_graylog_admin_password }}" # defaults to the admin password we want to set, if set.
+    set_graylog_admin_password: ""                   # when set via the command line, overrides the graylog administrator password
+    graylog_pass: "{{ set_graylog_admin_password }}" # defaults to the admin password we want to set (the variable previous). We will check this is non-empty as the first task, since if we are running against a live instance, we need to know the Graylog password!
+    hostname: phonegap-metrics                       # the hostname we should configure for the instance
   remote_user: ubuntu
   become: yes
 
@@ -15,7 +20,7 @@
     when: graylog_pass | trim == ''
   - name: Set hostname
     hostname:
-      name: phonegap-metrics
+      name: "{{ hostname }}"
     notify:
       - restart rsyslog
   - name: Ensure hostfile is correct
@@ -24,7 +29,7 @@
       owner: root
       group: root
       mode: 0644
-      line: "127.0.0.1 phonegap-metrics"
+      line: "127.0.0.1 {{ hostname }}"
       state: present
       create: yes
     notify:
@@ -60,7 +65,7 @@
     when: not(set_graylog_admin_password | trim == '')
   - name: Ensure pip is installed
     # TODO: this installs a bad version of pip!
-    # use https://odedrabhavesh.blogspot.mx/2017/02/importerror-no-module-named.html
+    # use https://odedrabhavesh.blogspot.mx/2017/02/importerror-no-module-named.html ?
     apt:
       name: python-pip
       state: present
