@@ -15,6 +15,10 @@
   become: yes
 
   tasks:
+  - name: Set Graylog REST API endpoint
+    # Set the Graylog REST API based on the hostname as defined in the `hosts` file in this directory.
+    set_fact:
+      graylog_rest_api: "http://{{ inventory_hostname }}:9000/api"
   - name: Ensure password for Graylog was provided
     fail: msg="Please provide an admin password for Graylog, either via the graylog_pass variable, or if you would like to set a new password to the Graylog instance, via the set_admin_graylog_password variable."
     when: graylog_pass | trim == ''
@@ -49,7 +53,7 @@
     service:
       name: ntp
       state: started
-  - name: Baseline graylog configuration
+  - name: Baseline graylog configuration (if graylog-settings.json does not exist)
     shell: |
       graylog-ctl set-timezone UTC \
       && graylog-ctl set-external-ip "https://{{ inventory_hostname }}:443/api/" \
@@ -73,6 +77,26 @@
     pip:
       name: httplib2
       state: latest
+  - name: Query existing Graylog HTTP inputs
+    uri:
+      url: "{{ graylog_rest_api }}/system/inputs"
+      method: GET
+      user: "admin"
+      password: "{{ graylog_pass }}"
+      return_content: yes
+      force_basic_auth: yes
+    register: inputs
+  - name: Add new HTTP input for application metrics (if it does not exist)
+    uri:
+      url: "{{ graylog_rest_api }}/system/inputs"
+      method: POST
+      user: "admin"
+      password: "{{ graylog_pass }}"
+      body: '{"title":"PhoneGap HTTP Metrics Input","type":"org.graylog2.inputs.gelf.http.GELFHttpInput","configuration":{"bind_address":"0.0.0.0","port":12201,"recv_buffer_size":16384,"override_source":null,"decompress_size_limit":16384,"idle_writer_timeout":10,"max_chunk_size":16384,"tcp_keepalive":false,"enable_cors":true,"tls_enable":false,"tls_client_auth":false},"global":true}'
+      force_basic_auth: yes
+      status_code: 201
+      body_format: json
+    when: inputs.json["total"] == 0 
 
   handlers:
     - name: reconfigure graylog
