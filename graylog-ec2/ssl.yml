@@ -35,12 +35,18 @@
       shell: cp /etc/letsencrypt/live/{{ domain }}/privkey.pem {{ key_path }}
     - name: Copy SSL certificate file to graylog destination
       shell: cp /etc/letsencrypt/live/{{ domain }}/fullchain.pem {{ cert_path }}
-    - name: Ensure key is only readable by root
+    - name: Ensure SSL directory is readable + executable
+      file:
+        path: "{{ ssl_path }}"
+        owner: root
+        group: root
+        mode: 0755
+    - name: Ensure key is readable
       file:
         path: "{{ key_path }}"
         owner: root
         group: root
-        mode: 0400
+        mode: 0444
     - name: Start nginx
       command: graylog-ctl start nginx
       when: has_graylog.rc == 0
