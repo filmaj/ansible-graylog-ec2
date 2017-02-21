@@ -44,5 +44,6 @@ The subdirectories in this repository contain sets of
 [Ansible Playbooks](http://docs.ansible.com/ansible/playbooks.html) and
 documentation to manage specific kinds of infrastructure. So far:
 
- - `graylog-ec2`: A [Graylog](http://www.graylog.org)-powered data storage and
-   analytics server running on EC2, powering https://metrics.phonegap.com.
+ - [`graylog-ec2`](graylog-ec2/): A [Graylog](http://www.graylog.org)-powered
+   data storage and analytics server running on EC2, powering
+   https://metrics.phonegap.com.

@@ -2,25 +2,29 @@
 
 > Powers https://metrics.phonegap.com
 
-## Repository Structure
-
 This repository currently contains everything necessary to control a single
 server: [the PhoneGap metrics server](https://metrics.phonegap.com). This server
 runs [Graylog](http://www.graylog.org), a log management and analytics storage
-system. The [Ansible Playbooks](http://docs.ansible.com/ansible/playbooks.html)
+system, and provides a [Kibana](https://www.elastic.co/products/kibana) web
+interface for visualization.
+
+## Repository Structure
+
+The [Ansible Playbooks](http://docs.ansible.com/ansible/playbooks.html)
 defining this server are:
 
  - **TODO** `provision.yml`: provisions a new server in Amazon EC2 for running
    the metrics server.
  - `ssl.yml`: interacts with [Let's Encrypt](http://letsencrypt.org) to
-   retrieve an SSL certificate and puts them in the right place. Also used to
-   renew the SSL certificate.
- - `configure.yml`: once a server is provisioned, this playbook configures the
-   server with the appropriate libraries, dependencies, software and
-   configuration necessary for the metrics server to run.
+   retrieve an SSL certificate and leverages them to secure the metrics server.
+   You may also use this playbook to renew the SSL certificate that is already
+   in place.
+ - `graylog.yml`: once a server is provisioned, this playbook configures
+   Graylog for the metrics server to run properly.
 
 The active metrics server instance is described in the `hosts` file in this
-repository.
+repository - this should be its fully-qualified domain name, as the inventory
+hostname is used in various configuration locations on the server.
 
 ## Getting Started
 
@@ -37,17 +41,23 @@ more example usage.
 
 ### First Run / Initial Setup
 
+#### Provision a Machine
+
 When setting up the instance for the first time, spin up an EC2 instance and
 make sure you have access to the private key to access the instance. PhoneGap
 uses an M4-XLarge EC2 instance.
 
+#### Setting up Graylog
+
 You should most definitely set a new admin password for the Graylog instance.
 Do so by passing the `set_graylog_admin_password` variable to the
-`configure.yml` playbook like so:
+`graylog.yml` playbook like so:
 
-    $ ansible-playbook configure.yml -i hosts --private-key path/to/metrics-server.pem --extra-vars "set_graylog_admin_password=mysecretpassword"
+    $ ansible-playbook graylog.yml -i hosts --private-key path/to/metrics-server.pem --extra-vars "set_graylog_admin_password=mysecretpassword"
 
 You can also run the above if you need to reset the Graylog admin password.
+
+#### Securing with SSL
 
 Graylog defaults to a self-signed SSL certificate. If you would like to secure
 your instance with a legitimate certificate instead, we have provided an
@@ -61,11 +71,20 @@ place, run:
 [production rate limits in place](https://letsencrypt.org/docs/rate-limits/) -
 please respect these!
 
+#### Installing Kibana
+
+You can, optionally, drop Kibana in to help with visualizing your metrics:
+
+    $ ansible-playbook kibana.yml -i hosts --private-key path/to/metrics-server.pem
+
+**NOTE**: This playbook currently assumes you have leveraged `ssl.yml` to
+secure your instance with legit SSL certificates.
+
 ### Subsequent Runs
 
 To ensure the metrics server is configured properly, run:
 
-    $ ansible-playbook configure.yml -i hosts --private-key path/to/metrics-server.pem --extra-vars "graylog_pass=mysecretpassword"
+    $ ansible-playbook graylog.yml -i hosts --private-key path/to/metrics-server.pem --extra-vars "graylog_pass=mysecretpassword"
 
 Note the use of the `graylog_pass` variable - this specifies the existing, in-
 place Graylog admin password.
