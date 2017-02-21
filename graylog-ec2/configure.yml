@@ -109,6 +109,3 @@
 
     - name: restart elasticsearch
       command: graylog-ctl restart elasticsearch
-
-    - name: restart nginx
-      command: graylog-ctl restart nginx
