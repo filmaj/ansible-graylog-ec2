@@ -1,3 +1,6 @@
 [submodule "roles/ansible-letsencrypt"]
 	path = graylog-ec2/roles/ansible-letsencrypt
 	url = git@github.com:jaywink/ansible-letsencrypt.git
+[submodule "graylog-ec2/roles/ansible-role-kibana"]
+	path = graylog-ec2/roles/ansible-role-kibana
+	url = git@github.com:geerlingguy/ansible-role-kibana.git

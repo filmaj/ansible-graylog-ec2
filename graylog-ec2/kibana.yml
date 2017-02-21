@@ -1,0 +1,52 @@
+---
+# Installs kibana (v4.6, since that is compatible with ES 2.4.2, which is the version graylog uses)
+# Thx! https://github.com/geerlingguy/ansible-role-kibana
+- name: Install and configure Kibana
+  hosts: metrics
+  vars:
+    nginx_conf_dir: /opt/graylog/conf/nginx
+    passwdfile: "{{ nginx_conf_dir }}/.htpasswd"    # location of the .htpasswd file used to 
+    password: ""                                    # basic auth password for the 'metrics' account to secure kibana instance. if empty, will skip setting/creating the file.
+    kibana_conf_file: /opt/kibana/config/kibana.yml # config location for kibana
+    kibana_subpath: "viz"                           # path uri for accessing kibana, i.e. https://myhost.com/{{ kibana_subpath }}
+  remote_user: ubuntu
+  become: yes
+
+  roles:
+  - role: ansible-role-kibana
+    kibana_elasticsearch_url: "http://{{ ansible_default_ipv4.address }}:9200"
+
+  post_tasks:
+  - name: Set kibana to only listen on loopback interface
+    replace:
+      dest: "{{ kibana_conf_file }}"
+      regexp: '^.*server.host.*$'
+      replace: "server.host: 127.0.0.1"
+  - name: Set kibana basepath to match set kibana uri path
+    replace:
+      dest: "{{ kibana_conf_file }}"
+      regexp: '^.*server.basePath.*$'
+      replace: 'server.basePath: "/{{ kibana_subpath }}"'
+    notify: restart kibana
+  - name: Create htpasswd file for basic auth (if does not exist)
+    htpasswd:
+      path: "{{ passwdfile }}"
+      name: metrics
+      password: "{{ password }}"
+      owner: root
+      group: root
+      mode: 0644
+      state: present
+      create: yes
+    when: password | trim != ''
+  - name: Copy over nginx config file
+    template:
+      src: templates/kibana-nginx-conf.j2
+      dest: "{{ nginx_conf_dir }}/nginx.conf"
+    notify: restart nginx
+
+  handlers:
+    - name: restart nginx
+      command: graylog-ctl restart nginx
+    - name: restart kibana
+      service: name=kibana state=restarted
