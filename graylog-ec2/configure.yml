@@ -69,16 +69,6 @@
     notify:
       - reconfigure graylog
     when: not(set_graylog_admin_password | trim == '')
-  - name: Ensure pip is installed
-    # TODO: this installs a bad version of pip!
-    # use https://odedrabhavesh.blogspot.mx/2017/02/importerror-no-module-named.html ?
-    apt:
-      name: python-pip
-      state: present
-  - name: Ensure httplib2 is installed
-    pip:
-      name: httplib2
-      state: latest
   - name: Query existing Graylog HTTP inputs
     uri:
       url: "{{ graylog_rest_api }}/system/inputs"

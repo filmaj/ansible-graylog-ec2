@@ -16,7 +16,8 @@ infrastructure.
 
 ## Requirements
 
- - [Ansible](http://docs.ansible.com/ansible/intro_installation.html) tool installed
+ - [Ansible](http://docs.ansible.com/ansible/intro_installation.html) installed,
+   at least version 2.1, but preferably 2.2.
  - Private keys for accessing specific AWS instances
  - Highly recommended to read through the [Ansible Introduction](http://docs.ansible.com/ansible/intro.html).
    In addition, Ansible's concept of [Playbooks](http://docs.ansible.com/ansible/playbooks.html)
