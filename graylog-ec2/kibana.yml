@@ -1,11 +1,14 @@
 ---
-# Installs kibana (v4.6, since that is compatible with ES 2.4.2, which is the version graylog uses)
+# Installs kibana (v4.6, since that is compatible with ES 2.4.2, which is the
+# version graylog uses)
+# Note this uses the nginx config encapsulated in the templates/ directory
+# to set up all the redirects properly.
 # Thx! https://github.com/geerlingguy/ansible-role-kibana
 - name: Install and configure Kibana
   hosts: metrics
   vars:
     nginx_conf_dir: /opt/graylog/conf/nginx
-    passwdfile: "{{ nginx_conf_dir }}/.htpasswd"    # location of the .htpasswd file used to 
+    passwdfile: "{{ nginx_conf_dir }}/.htpasswd"    # location of the .htpasswd file - we will store basic auth credentials here
     password: ""                                    # basic auth password for the 'metrics' account to secure kibana instance. if empty, will skip setting/creating the file.
     kibana_conf_file: /opt/kibana/config/kibana.yml # config location for kibana
     kibana_subpath: "viz"                           # path uri for accessing kibana, i.e. https://myhost.com/{{ kibana_subpath }}

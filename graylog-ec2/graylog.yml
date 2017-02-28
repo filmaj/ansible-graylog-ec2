@@ -11,8 +11,6 @@
     set_graylog_admin_password: ""                          # when set via the command line, overrides the graylog administrator password
     graylog_pass: "{{ set_graylog_admin_password }}"        # defaults to the admin password we want to set (the variable previous). We will check this is non-empty as the first task, since if we are running against a live instance, we need to know the Graylog password!
     hostname: phonegap-metrics                              # the hostname we should configure for the instance
-    tls_cert_file: "/opt/graylog/conf/nginx/ca/graylog.crt" # location of the ssl certificate to use to secure the instance - check ssl.yml for details
-    tls_key_file: "/opt/graylog/conf/nginx/ca/graylog.key"  # location of the ssl private key to use to secure the instance - check ssl.yml for details
   remote_user: ubuntu
   become: yes
 
@@ -84,11 +82,11 @@
       method: POST
       user: "admin"
       password: "{{ graylog_pass }}"
-      body: '{"title":"PhoneGap HTTPS Metrics Input","type":"org.graylog2.inputs.gelf.http.GELFHttpInput","configuration":{"bind_address":"0.0.0.0","port":12201,"recv_buffer_size":16384,"override_source":null,"decompress_size_limit":16384,"idle_writer_timeout":10,"max_chunk_size":16384,"tcp_keepalive":false,"enable_cors":true,"tls_enable":true,"tls_client_auth":"disabled","tls_cert_file":"{{ tls_cert_file }}","tls_key_file":"{{ tls_key_file }}"},"global":true}'
+      body: '{"title":"PhoneGap Metrics Input","type":"org.graylog2.inputs.gelf.http.GELFHttpInput","configuration":{"bind_address":"127.0.0.1","port":12201,"recv_buffer_size":16384,"override_source":null,"decompress_size_limit":16384,"idle_writer_timeout":10,"max_chunk_size":16384,"tcp_keepalive":false,"enable_cors":true,"tls_client_auth":"disabled"},"global":true}'
       force_basic_auth: yes
       status_code: 201
       body_format: json
-    when: inputs.json["total"] == 0 
+    when: inputs.json["total"] == 0
 
   handlers:
     - name: reconfigure graylog

@@ -21,23 +21,25 @@ defining this server are:
    in place.
  - `graylog.yml`: once a server is provisioned, this playbook configures
    Graylog for the metrics server to run properly.
+ - `kibana.yml`: sets up a kibana instance on the server. Note that this
+   changes the nginx configuration on the server. Please check the playbook
+   details first!
 
 The active metrics server instance is described in the `hosts` file in this
 repository - this should be its fully-qualified domain name, as the inventory
 hostname is used in various configuration locations on the server.
+
+**NOTE**: The playbooks contain sensible defaults for PhoneGap-specific
+domains and property. Please take a look at the playbooks themselves - they
+contain comments near the top fully describing
+[Ansible variables](http://docs.ansible.com/ansible/playbooks_variables.html)
+you can pass in to customize the playbook for your own purposes.
 
 ## Getting Started
 
 First, ensure you have pulled down the submodules:
 
     $ git submodule update --init
-
-**NOTE**: The playbooks contain sensible defaults for PhoneGap-specific
-domains and property. Please take a look at the playbooks themselves - they
-contain comments near the top fully describing
-[Ansible variables](http://docs.ansible.com/ansible/playbooks_variables.html)
-you can pass in to customize the playbook for your own purposes, as well as
-more example usage.
 
 ### First Run / Initial Setup
 
@@ -89,7 +91,7 @@ To ensure the metrics server is configured properly, run:
 Note the use of the `graylog_pass` variable - this specifies the existing, in-
 place Graylog admin password.
 
-To renew the SSL certificate, simply re-run the playbook:
+To renew the SSL certificate, simply re-run the `ssl.yml` playbook:
 
     $ ansible-playbook ssl.yml -i hosts --private-key path/to/metrics-server.pem
 

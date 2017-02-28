@@ -2,7 +2,10 @@
 # This platbook leverages Let's Encrypt to create an SSL certificate for the
 # domain of our Graylog instance. It's important to customize the variables
 # below for your own usage!
-# Note that this will bounce nginx, as interacting with Let's Encrypt requires a delicate dance with nginx.
+# Note that this will bounce nginx, as interacting with Let's Encrypt requires a
+# delicate dance with nginx.
+# Note that the kibana.yml playbook also customizes the nginx config, which
+# by default leverages the SSL cert created here.
 - hosts: metrics
   become: yes
   remote_user: ubuntu
