@@ -6,7 +6,37 @@ This repository currently contains everything necessary to control a single
 server: [the PhoneGap metrics server](https://metrics.phonegap.com). This server
 runs [Graylog](http://www.graylog.org), a log management and analytics storage
 system, and provides a [Kibana](https://www.elastic.co/products/kibana) web
-interface for visualization.
+interface for visualization. It leverages [Ansible](http://ansible.com), a
+configuration management software for automating machine setup.
+
+## Technical Overview
+
+If you follow the instructions in this README, you will end up with a server
+running the following components / design:
+
+ - [nginx](https://nginx.org): acts as the initial request handler. Check the
+   [nginx config in the templates](templates/kibana-nginx-conf.j2) for full
+   details. Main things to know about it:
+   - listens on ports 80 and 443, and redirects requests coming in on port 80
+     (from http) to port 443 (to https)
+   - is configured with SSL (see `ssl.yml`), and SSL is terminated at nginx.
+   - requests hitting the root of https://metrics.phonegap.com get sent to
+     Graylog's web interface (more info on that below)
+   - requests hitting `/viz` get sent to Kibana (more below)
+   - requests hitting `/gelf` get sent to the GELF HTTP input (more below)
+ - [Graylog](https://graylog.org): a full-featured log management solution,
+   leveraging [ElasticSearch](https://www.elastic.co/products/elasticsearch)
+   as a datastore. Provides abilities to process events on the fly, tag them,
+   and even create alerts based on incoming logs.
+   - it will be configured with [one HTTP input accepting GELF messages](http://docs.graylog.org/en/2.2/pages/sending_data.html#gelf-sending-from-applications).
+     This input listens on the server's loopback interface on port 12201, but
+     nginx redirects to it (see above).
+   - https://metrics.phonegap.com leads to the main Graylog web interface.
+ - [Kibana](https://www.elastic.co/products/kibana), a more sophisticated
+   front-end for visualizing incoming data.
+   - it listens on the loopback interface on port 5601, but nginx redirects to
+     it (see above).
+ 
 
 ## Repository Structure
 
@@ -94,6 +124,7 @@ place Graylog admin password.
 To renew the SSL certificate, simply re-run the `ssl.yml` playbook:
 
     $ ansible-playbook ssl.yml -i hosts --private-key path/to/metrics-server.pem
+
 
 ## References
 
