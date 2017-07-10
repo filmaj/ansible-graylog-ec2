@@ -47,8 +47,21 @@ http {
         client_body_buffer_size 128k;
       }
 
+      location /gelfmunger {
+        content_by_lua '
+        ngx.req.read_body()
+        local body = ngx.req.get_body_data()
+        local realip = ngx.req.get_headers()["X-Forwarded-For"]
+        local append = [[,"ip":"]] .. realip .. [["}]]
+        local closingbraceindex = string.find(body, "}", -1)
+        local newbody = string.sub(body, 1, closingbraceindex-1) .. append
+        res = ngx.location.capture("/gelfproxypass", {method = ngx.HTTP_POST, body = newbody})
+        ngx.print(res.body)
+        ';
+      }
+
       location /gelf {
-        proxy_pass http://localhost:12201/gelf;
+        proxy_pass https://metrics.phonegap.com/gelfmunger;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -58,6 +71,9 @@ http {
         proxy_send_timeout 100;
         proxy_read_timeout 100;
         proxy_buffers 4 32k;
+      }
+      location /gelfproxypass {
+        proxy_pass http://localhost:12201/gelf;
       }
 
       location /api/ {
